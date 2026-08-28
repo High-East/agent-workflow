@@ -1,0 +1,13 @@
+.DS_Store
+.env
+.env.*
+!.env.example
+
+# Local/private context overlays
+packages/context/AGENTS.md
+packages/context/*.local.md
+
+# Runtime and session state
+.pi/
+.local-state/
+*.log
