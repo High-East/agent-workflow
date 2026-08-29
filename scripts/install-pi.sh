@@ -69,4 +69,4 @@ for extension_file in index.ts agents.ts; do
 done
 
 printf '\nInstalled reusable workflow assets.\n'
-printf 'Global context was not changed; review packages/context/AGENTS.example.md manually.\n'
+printf 'Global context was not changed; review packages/context/AGENTS.md manually.\n'

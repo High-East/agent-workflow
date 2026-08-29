@@ -4,7 +4,6 @@
 !.env.example
 
 # Local/private context overlays
-packages/context/AGENTS.md
 packages/context/*.local.md
 
 # Runtime and session state

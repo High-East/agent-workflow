@@ -19,7 +19,7 @@ The workflow contains six discovery roles, one feature implementer, and two inde
 ## Repository layout
 
 ```text
-packages/context/AGENTS.example.md          Optional public global-context template
+packages/context/AGENTS.md                  Public global-context template
 packages/skills/interview/                  Discovery, approval, and handoff
 packages/skills/implement/                  Implementation and review loop
 packages/skills/debrief/                    Explanation and understanding check
@@ -50,7 +50,7 @@ The global context template is intentionally not installed automatically. Review
 
 ```sh
 mkdir -p ~/.pi/agent
-cp -n packages/context/AGENTS.example.md ~/.pi/agent/AGENTS.md
+cp -n packages/context/AGENTS.md ~/.pi/agent/AGENTS.md
 ```
 
 Do not commit a machine-generated memory index, credentials, private project context, session data, or absolute personal paths to a public fork.
