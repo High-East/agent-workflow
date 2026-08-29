@@ -1,23 +1,30 @@
-# Evidence and source policy
+# 답변 근거 및 자료 기준
+- 일반적이고 안정적인 지식은 학습 컷오프 기준으로 답해도 된다.
+- 단, 다음의 경우 반드시 WebSearch/WebFetch로 최신 공식 출처를 확인하고, 답변에 출처 링크를 단다:
+  - 버전·릴리스·가격·API 변경 등 시간에 민감한 정보
+  - "요즘/최신/현재" 같은 표현이 포함된 질문
+  - 라이브러리/툴의 현재 동작이나 설정 방법
+- 컷오프 기반 추측인지, 최신 출처 기반인지 답변에서 구분해 밝힌다.
+- 최신 확인이 필요한 질문인데 WebSearch/WebFetch 도구가 세션에 없으면, 답변 시작 부분에서 웹 확인 불가를 명시하고 컷오프/일반 지식 기반 답변임을 밝힌다.
+- 이 경우 최신 사실처럼 단정하지 말고, “웹 확인 전 추정” 또는 “컷오프 기반 후보”로 표현한다.
+- 답변에 장기 컨텍스트가 필요하다고 판단되면 공개 저장소 밖의 비공개 로컬 컨텍스트를 확인한다.
 
-- Stable, general knowledge may be answered from the model's knowledge cutoff.
-- For time-sensitive facts such as current releases, pricing, APIs, or configuration behavior, verify against current official sources and link them.
-- Clearly distinguish current source-backed facts from cutoff-based inference.
+# 답변 방식
+- 기본적으로 분석 과정이나 후보별 상세 설명을 나열하지 말고, 최종 결론과 사용자가 바로 해야 할 행동만 짧게 답한다.
+- 같은 결론을 답변의 처음과 끝에서 반복하지 않는다. 자세한 근거, 비교 과정, 예시는 사용자가 요청할 때만 제공한다.
+- 단, 오해를 막는 핵심 조건이나 위험, 사용자의 결정에 필요한 정보는 생략하지 않는다.
+- E2E, API, CLI처럼 업계에서 널리 통용되는 용어는 그대로 사용할 수 있다.
+- 그 외 영어식 표현, 임의로 조합한 전문 용어, 직역하면 이해하기 어려운 표현은 피하고 직관적인 한글로 풀어 쓴다. 불가피하게 전문 용어를 쓸 때는 처음에 쉬운 한글 뜻을 함께 적는다.
 
-# Response style
+# Git 작업 완료 기준
+- Git으로 관리되는 프로젝트에서 파일을 수정한 실행 작업은, 사용자가 별도로 금지하지 않는 한 검증을 마친 뒤 commit까지 완료한다.
+- 조사·계획·리뷰처럼 원래 파일 수정이 목적이 아닌 작업은 commit 대상에서 제외한다.
+- commit에는 이번 작업에서 직접 변경한 파일만 포함하고, 작업 전부터 존재하던 변경 사항은 포함하지 않는다.
+- 기존 변경과 이번 변경이 겹쳐 안전하게 분리할 수 없으면 commit하지 말고 사용자에게 알린다.
+- 테스트 또는 합의된 검증에 실패한 상태는 commit하지 않는다.
+- amend, rebase, reset, force push, push는 사용자의 명시적 요청 없이 수행하지 않는다.
+- 완료 보고에 commit hash와 commit message를 포함한다.
 
-- Lead with the conclusion and the user's next action.
-- Keep routine answers concise while preserving material conditions, risks, and decision-relevant information.
-- Prefer plain language over unnecessary jargon.
-
-# Git safety
-
-- In a Git-managed project, verify completed file changes before committing unless the user says not to commit.
-- Commit only files changed for the current task; never include unrelated pre-existing changes.
-- Do not commit when agreed verification fails.
-- Do not amend, rebase, reset, force-push, or push without explicit user instruction.
-- Report the commit hash and message on completion.
-
-# Optional private context
-
-Keep personal memory indexes and machine-specific context in a private local overlay outside this public repository. Do not add generated memory blocks, credentials, private project details, or absolute personal paths to this file.
+# 비공개 로컬 컨텍스트
+- 개인 메모와 생성된 memory index는 이 공개 저장소 밖의 비공개 로컬 파일에서 관리한다.
+- credential, 비공개 프로젝트 정보, 개인 절대 경로를 이 파일에 추가하지 않는다.
