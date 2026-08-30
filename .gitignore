@@ -3,10 +3,10 @@
 .env.*
 !.env.example
 
-# Local/private context overlays
-packages/context/*.local.md
+# Local/private rule overlays
+rules/*.local.md
 
-# Runtime and session state
-.pi/
+# Dependencies, runtime, and session state
+node_modules/
 .local-state/
 *.log

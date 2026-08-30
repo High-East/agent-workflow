@@ -1,0 +1,16 @@
+{
+  "name": "agent-workflow",
+  "private": true,
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "sync": "rulesync generate --global --targets claudecode,codexcli --features rules,skills,subagents",
+    "sync:dry-run": "rulesync generate --global --targets claudecode,codexcli --features rules,skills,subagents --dry-run",
+    "sync:check": "rulesync generate --global --targets claudecode,codexcli --features rules,skills,subagents --check",
+    "validate": "rulesync doctor --strict"
+  },
+  "devDependencies": {
+    "rulesync": "16.18.0"
+  }
+}

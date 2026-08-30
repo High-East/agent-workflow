@@ -1,3 +1,8 @@
+---
+root: true
+targets: ["claudecode", "codexcli"]
+---
+
 # 답변 근거 및 자료 기준
 - 일반적이고 안정적인 지식은 학습 컷오프 기준으로 답해도 된다.
 - 단, 다음의 경우 반드시 WebSearch/WebFetch로 최신 공식 출처를 확인하고, 답변에 출처 링크를 단다:

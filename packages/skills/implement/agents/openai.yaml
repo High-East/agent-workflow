@@ -1,4 +1,0 @@
-interface:
-  display_name: "Implement"
-  short_description: "Implement an approved PRD with review loops and run tracking."
-  default_prompt: "Use implement to build the approved PRD and iterate until review passes."

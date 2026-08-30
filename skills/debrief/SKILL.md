@@ -1,10 +1,17 @@
 ---
 name: debrief
 description: Explain a completed implementation from its specification, artifacts, notes, reviews, and diff, then check understanding with one adaptive question at a time.
-disable-model-invocation: true
+targets: ["claudecode", "codexcli"]
+claudecode:
+  disable-model-invocation: true
+codexcli:
+  policy:
+    allow_implicit_invocation: false
 ---
 
 # Debrief
+
+Run this skill only when the user explicitly invokes it through the current agent host's skill mechanism.
 
 Use the current implementation conversation or a user-supplied approved `spec.md`. Read the specification and its explicitly indexed supporting documents in order, then useful interview outputs, canonical artifacts, prototypes, `implementation-notes.md`, reviews, and relevant Git diff/commits. Do not confuse implementation completion with user understanding.
 
