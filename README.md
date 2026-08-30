@@ -2,6 +2,8 @@
 
 A reusable, agent-independent workflow for structured discovery, isolated implementation, independent review, and post-implementation debriefing.
 
+The repository is the source of truth for global context, skills, and subagents. [Rulesync](https://github.com/dyoshikawa/rulesync) generates the host-specific files consumed by Claude Code and Codex.
+
 ## Workflow
 
 ```text
@@ -19,57 +21,58 @@ The workflow contains six discovery roles, one feature implementer, and two inde
 ## Repository layout
 
 ```text
-packages/context/AGENTS.md                  Agent-neutral global-context template
-packages/skills/interview/                  Discovery, approval, and handoff
-packages/skills/implement/                  Implementation and review loop
-packages/skills/debrief/                    Explanation and understanding check
-packages/team/                              Agent-neutral role contracts
-scripts/install-pi.sh                       Non-destructive Pi symlink installer
+contexts/                       Agent-neutral global context
+skills/                         Reusable workflow skills
+subagents/                      Discovery, implementation, and review roles
+.rulesync/                      Rulesync adapter links to the three directories
+rulesync.jsonc                  Claude Code and Codex generation config
+package.json                    Pinned Rulesync commands and version
 ```
 
-The shared skill and role instruction bodies describe host capabilities instead of vendor-specific commands, tool names, or configuration paths. Runtime-specific installation and metadata belong in host adapters.
+Edit only `contexts/`, `skills/`, and `subagents/`. The `.rulesync/` directory contains relative symbolic links so Rulesync can consume those root-level directories without maintaining duplicate source files.
 
-## Current Pi adapter requirements
+The `interview` skill is self-contained. Its detailed workflow is embedded directly in `skills/interview/SKILL.md`, so invoking the skill does not require another reference-file read.
 
-- [Pi coding agent](https://github.com/earendil-works/pi)
-- `tmux`
-- `uuidgen`
-- Pi's official `subagent` example extension
+## Install or update on a computer
 
-The installer locates the extension through `npm root -g` or the standard Homebrew global npm location. Set `AGENT_WORKFLOW_PI_SUBAGENT_SOURCE` to override detection.
+Requirements:
 
-## Install for Pi
+- Node.js 22 or later and npm
+- Claude Code, Codex, or both
 
-Inspect the installer, then run:
+Clone the repository, then run:
 
 ```sh
-./scripts/install-pi.sh
+npm ci
+npm run sync:dry-run
+npm run sync
 ```
 
-It links the three skills into `~/.pi/agent/skills/`, the nine roles into `~/.pi/agent/agents/`, and Pi's official subagent extension into `~/.pi/agent/extensions/subagent/`. It refuses to replace an existing foreign file or link.
+`sync:dry-run` shows the user-level files that would change. `sync` generates all three feature groups for both hosts:
 
-The global context template is intentionally not installed automatically. Review and merge it into your own context instead:
+| Source | Claude Code | Codex |
+| --- | --- | --- |
+| `contexts/` | `~/.claude/CLAUDE.md` | `~/.codex/AGENTS.md` |
+| `skills/` | `~/.claude/skills/` | `~/.agents/skills/` |
+| `subagents/` | `~/.claude/agents/` | `~/.codex/agents/` |
 
-```sh
-mkdir -p ~/.pi/agent
-cp -n packages/context/AGENTS.md ~/.pi/agent/AGENTS.md
-```
+Run the same commands after pulling repository updates. `npm run sync:check` exits unsuccessfully when the installed files differ from the repository sources.
 
-Do not commit a machine-generated memory index, credentials, private project context, session data, or absolute personal paths to a public fork.
+Rulesync is pinned exactly in `package.json` and `package-lock.json`. Upgrade it deliberately, review its release notes, regenerate in a temporary directory, and commit the version change only after both host outputs validate.
 
-## Use with Pi
+## Source conventions
 
-Start Pi from the project you want to change and invoke:
+- Shared instruction bodies remain agent-independent.
+- Rulesync-only routing metadata stays in YAML frontmatter.
+- Host-specific settings use `claudecode` and `codexcli` frontmatter blocks.
+- Workflow skills are explicit-only on both hosts.
+- Generated host files are deployment artifacts and are not committed here.
 
-```text
-/skill:interview
-```
-
-After literal-keyword approval, the interview skill writes the approved specification and requests a host-native handoff to a fresh top-level agent session. The current Pi installer links the reusable assets; multi-host synchronization and concrete handoff adapters are intentionally separate work. Run `/skill:debrief` after completion when you want an explanation and adaptive knowledge check.
+`delete` is disabled in `rulesync.jsonc`, so synchronization does not sweep unrelated files from host configuration directories. A generated file with the same name is still managed by this repository; always inspect `sync:dry-run` before the first installation or after renaming an item.
 
 ## Privacy model
 
-This repository contains only reusable workflow instructions and runtime adapters. Personal memory, generated memory indexes, credentials, agent authentication and session state, and machine-specific configuration must remain outside the repository.
+This repository contains only reusable workflow instructions and synchronization configuration. Personal memory, generated memory indexes, credentials, authentication and session state, machine-specific paths, and private project context must remain outside the repository.
 
 ## License
 

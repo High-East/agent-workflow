@@ -1,6 +1,7 @@
 ---
 name: ui-designer
 description: Establishes the major UX/UI direction during discovery and creates rapid isolated prototypes when seeing the experience will improve the decision.
+targets: ["claudecode", "codexcli"]
 ---
 
 # UI Designer

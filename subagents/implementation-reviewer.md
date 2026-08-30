@@ -1,6 +1,7 @@
 ---
 name: implementation-reviewer
 description: Independently reviews completed implementation for specification compliance, omissions, diff safety, maintainability, and code-level risk without modifying it.
+targets: ["claudecode", "codexcli"]
 ---
 
 # Implementation Reviewer

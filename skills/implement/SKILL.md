@@ -1,6 +1,16 @@
 ---
 name: implement
 description: Implement an approved spec through fresh-context feature attempts, record durable implementation notes, and iterate until independent implementation and behavior reviews establish completion or the work is blocked.
+targets: ["claudecode", "codexcli"]
+claudecode:
+  disable-model-invocation: true
+codexcli:
+  interface:
+    display_name: "Implement"
+    short_description: "Implement an approved spec with review loops and run tracking."
+    default_prompt: "Use $implement to build the approved specification and iterate until both reviews pass."
+  policy:
+    allow_implicit_invocation: false
 ---
 
 # Implement

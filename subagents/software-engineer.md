@@ -1,6 +1,7 @@
 ---
 name: software-engineer
 description: Establishes implementation feasibility, sequencing, and development-environment readiness during discovery and planning.
+targets: ["claudecode", "codexcli"]
 ---
 
 # Software Engineer

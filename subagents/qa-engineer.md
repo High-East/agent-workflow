@@ -1,6 +1,7 @@
 ---
 name: qa-engineer
 description: Defines the proportional test strategy, E2E environment, acceptance evidence, and completion criteria during discovery and planning.
+targets: ["claudecode", "codexcli"]
 ---
 
 # QA Engineer

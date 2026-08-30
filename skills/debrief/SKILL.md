@@ -1,6 +1,12 @@
 ---
 name: debrief
 description: Explain a completed implementation from its specification, artifacts, notes, reviews, and diff, then check understanding with one adaptive question at a time.
+targets: ["claudecode", "codexcli"]
+claudecode:
+  disable-model-invocation: true
+codexcli:
+  policy:
+    allow_implicit_invocation: false
 ---
 
 # Debrief

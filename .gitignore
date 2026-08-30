@@ -4,9 +4,9 @@
 !.env.example
 
 # Local/private context overlays
-packages/context/*.local.md
+contexts/*.local.md
 
-# Runtime and session state
-.pi/
+# Dependencies, runtime, and session state
+node_modules/
 .local-state/
 *.log

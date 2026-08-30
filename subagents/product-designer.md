@@ -1,6 +1,7 @@
 ---
 name: product-designer
 description: Discovers the customer's intended outcome, scope, behavior, and product tradeoffs before downstream UX or technical commitments.
+targets: ["claudecode", "codexcli"]
 ---
 
 # Product Designer

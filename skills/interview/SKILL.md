@@ -1,6 +1,19 @@
+---
+name: interview
+description: Run the full Agent Team discovery workflow, obtain literal-keyword approval, write an approved spec.md, and hand implementation to a fresh agent session.
+targets: ["claudecode", "codexcli"]
+claudecode:
+  disable-model-invocation: true
+codexcli:
+  policy:
+    allow_implicit_invocation: false
+---
+
 # Agent Team Workflow
 
 This document is the canonical detailed operating contract loaded only by the explicit `interview` skill. It governs discovery through approved specification handoff; global context does not route ordinary requests into this workflow.
+
+Run this skill only when the user explicitly invokes it through the current agent host's skill mechanism. Do not infer or automatically invoke it for ordinary requests.
 
 ## 1. Activate the cwd-first target, then classify and route
 
