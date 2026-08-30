@@ -1,17 +1,17 @@
 # agent-workflow
 
-A reusable Pi workflow for structured discovery, isolated implementation, independent review, and post-implementation debriefing.
+A reusable, agent-independent workflow for structured discovery, isolated implementation, independent review, and post-implementation debriefing.
 
 ## Workflow
 
 ```text
-/skill:interview
+explicitly invoke `interview`
   → approved docs/plans/<feature-slug>/spec.md
-  → fresh Pi session in tmux
-  → /skill:implement <absolute-spec-path>
+  → fresh top-level agent session
+  → explicitly invoke `implement` with <absolute-spec-path>
   → isolated feature implementation attempts
   → implementation and behavior reviews
-  → optional /skill:debrief
+  → optionally invoke `debrief`
 ```
 
 The workflow contains six discovery roles, one feature implementer, and two independent reviewers.
@@ -19,15 +19,17 @@ The workflow contains six discovery roles, one feature implementer, and two inde
 ## Repository layout
 
 ```text
-packages/context/AGENTS.md                  Public global-context template
+packages/context/AGENTS.md                  Agent-neutral global-context template
 packages/skills/interview/                  Discovery, approval, and handoff
 packages/skills/implement/                  Implementation and review loop
 packages/skills/debrief/                    Explanation and understanding check
-packages/team/                              Specialist and execution roles
+packages/team/                              Agent-neutral role contracts
 scripts/install-pi.sh                       Non-destructive Pi symlink installer
 ```
 
-## Requirements
+The shared skill and role instruction bodies describe host capabilities instead of vendor-specific commands, tool names, or configuration paths. Runtime-specific installation and metadata belong in host adapters.
+
+## Current Pi adapter requirements
 
 - [Pi coding agent](https://github.com/earendil-works/pi)
 - `tmux`
@@ -55,7 +57,7 @@ cp -n packages/context/AGENTS.md ~/.pi/agent/AGENTS.md
 
 Do not commit a machine-generated memory index, credentials, private project context, session data, or absolute personal paths to a public fork.
 
-## Use
+## Use with Pi
 
 Start Pi from the project you want to change and invoke:
 
@@ -63,11 +65,11 @@ Start Pi from the project you want to change and invoke:
 /skill:interview
 ```
 
-After literal-keyword approval, the interview skill writes the approved specification and launches `/skill:implement` in a fresh detached tmux-hosted Pi session. Run `/skill:debrief` after completion when you want an explanation and adaptive knowledge check.
+After literal-keyword approval, the interview skill writes the approved specification and requests a host-native handoff to a fresh top-level agent session. The current Pi installer links the reusable assets; multi-host synchronization and concrete handoff adapters are intentionally separate work. Run `/skill:debrief` after completion when you want an explanation and adaptive knowledge check.
 
 ## Privacy model
 
-This repository contains only reusable workflow instructions. Personal memory, generated memory indexes, credentials, Pi authentication and session state, and machine-specific configuration must remain outside the repository.
+This repository contains only reusable workflow instructions and runtime adapters. Personal memory, generated memory indexes, credentials, agent authentication and session state, and machine-specific configuration must remain outside the repository.
 
 ## License
 

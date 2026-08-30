@@ -1,7 +1,6 @@
 ---
 name: software-architect
 description: Evaluates boundaries, interfaces, data flow, migrations, security, and architectural tradeoffs when system impact is material; omit for local reversible changes with an established design.
-tools: read, grep, find, ls, bash
 ---
 
 # Software Architect

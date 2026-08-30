@@ -1,26 +1,25 @@
 ---
 name: implement
 description: Implement an approved spec through fresh-context feature attempts, record durable implementation notes, and iterate until independent implementation and behavior reviews establish completion or the work is blocked.
-disable-model-invocation: true
 ---
 
 # Implement
 
 ## Entry contract
 
-Use the user-supplied approved spec as the only entry point. Reject every other entry document.
+Run this skill only when the user explicitly invokes it through the current agent host's skill mechanism with a user-supplied approved spec. Reject every other entry document.
 
 Read the specification completely, then read every linked document in its explicit stated order. The specification remains the highest-priority contract. Confirm:
 
 - specification state is `ready` and approval is recorded as `yes` with provenance (never implement `blocked`, draft, or unapproved work),
-- the specification's absolute target root and target cwd exist and match the intended project rather than Pi's startup cwd,
+- the specification's absolute target root and target cwd exist and match the intended project rather than the orchestration session's startup directory,
 - canonical worktree and current branch match the specification when Git applies,
-- applicable target `AGENTS.md` or `CLAUDE.md` files from target root through target cwd are reread and match the specification's selected context and scope,
+- applicable project instruction files, such as `AGENTS.md` or `CLAUDE.md`, from target root through target cwd are reread and match the specification's selected context and scope,
 - linked documents exist and do not conflict with the specification or its declared priority and reading order,
 - no unresolved blocker, security risk, data-loss risk, or high-impact unknown remains,
 - existing dirty changes are identified and will not be reset, overwritten, staged, or committed accidentally.
 
-Record the revalidated target root, target cwd, worktree/branch, selected context paths, scope, and context generation in implementation/review packets. Bind commands and subagents to the validated target root and use explicit paths for narrower scopes; Pi's startup cwd is never authoritative.
+Record the revalidated target root, target cwd, worktree/branch, selected context paths, scope, and context generation in implementation/review packets. Bind commands and subagents to the validated target root and use explicit paths for narrower scopes; the orchestration session's startup directory is never authoritative.
 
 If target or repository metadata is stale, locate it and ask before changing the approved contract. If applicable context drift materially changes requirements, architecture, protected areas, safety, or acceptance criteria, stop for reconciliation rather than silently refreshing the approved contract. For greenfield work, use the absolute project directory approved in the specification; never substitute the orchestration cwd.
 
@@ -53,7 +52,7 @@ Record decisions, newly discovered unknowns, deviations, files, and verification
 
 Before product edits, divide the approved work into independent features when that improves feedback or context control. Each feature must produce a coherent result that can be exercised and verified on its own, crossing UI, API, data, infrastructure, or other layers as needed; do not define features as layer-only batches. Use the fewest features that preserve coherent outcomes and useful feedback. Simple work may remain one feature, while complex work has no fixed feature limit. When many features are needed, group them under named execution phases in the notes for navigation and resumption rather than combining unrelated outcomes to satisfy a numeric cap. Record each feature, its dependencies, approved criteria, focused verification, and completion state in the notes.
 
-The lead orchestrates but does not make product or test edits. Every feature attempt, including the first attempt and each retry, must be a separate single invocation of the user-level `feature-implementer` subagent with `cwd` set to the validated target root. Never use a subagent chain for feature attempts, pass `{previous}`, resume an earlier subagent session, or treat main-context compaction as equivalent isolation. The subagent invocation itself is the isolation boundary.
+The lead orchestrates but does not make product or test edits. Every feature attempt, including the first attempt and each retry, must be a separate single invocation of the shared-scope `feature-implementer` subagent through the current agent host's native delegation mechanism, with `cwd` set to the validated target root. Never resume or chain from an earlier feature-attempt session, pass prior conversational output as hidden context, or treat main-context compaction as equivalent isolation. The fresh subagent invocation itself is the isolation boundary.
 
 Before each attempt, the lead writes all durable state needed for independent resumption to `implementation-notes.md`. Give the feature implementer a packet containing:
 
@@ -92,17 +91,17 @@ Keep model turns and retained context proportional to the work:
   1. Establish the relevant structure with `rg --files` first because it is fast and ignore-aware. Constrain it by approved directories, globs, and file types. Use `find` for shallow directory topology, path metadata, or files intentionally outside ignore rules; exclude dependency, build, cache, and VCS directories.
   2. When a symbol, route, filename, configuration key, or literal is known, use `rg` as the default content search. Search definitions and references, then narrow by path and type. Use `grep` only as a fallback, for a single known file, or to filter streamed command output.
   3. When the exact name or location is unknown in unfamiliar brownfield code, use `semble search` with a concrete behavior or responsibility query and an explicit target path. Keep result and snippet counts small. After finding a strong anchor, use `semble find-related` only when analogous implementations or neighboring behavior would materially clarify the change.
-  4. Treat Semble output and search snippets as candidates, never as edit evidence. Confirm selected definitions, callers, boundaries, configuration, and adjacent tests with Pi `read` and exact `rg` or `grep` searches before choosing an approach or editing.
+  4. Treat Semble output and search snippets as candidates, never as edit evidence. Confirm selected definitions, callers, boundaries, configuration, and adjacent tests with direct file reads and exact `rg` or `grep` searches before choosing an approach or editing.
   5. Stop broad discovery once the implementation path, affected callers and boundaries, existing conventions, and relevant tests are sufficiently established. Expand only to resolve a concrete unknown or credible impact.
 - Batch independent structure searches, exact searches, targeted reads, and environment probes in parallel. Read narrowly after search rather than loading unrelated whole files.
-- Batch all known changes to one file into one Pi `edit` call. Create repeated fixtures, manifests, or boilerplate with a deterministic generator when that is clearer and safer than many individual writes. Use structural rewrite tools only for genuinely repeated syntax-aware changes.
+- Batch all known changes to one file into one coherent edit operation when the host supports it. Create repeated fixtures, manifests, or boilerplate with a deterministic generator when that is clearer and safer than many individual writes. Use structural rewrite tools only for genuinely repeated syntax-aware changes.
 - Redirect long build and test output to a temporary log or durable specification artifact. Return only the exit status, pass/fail counts, first actionable failure, relevant file/line locations, and roughly the final 30–80 useful lines. Do not place complete successful logs in context.
 - At a feature boundary, make notes sufficient for a fresh implementer with no conversation history. Main-context compaction may still reduce orchestration context, but it never replaces the required fresh subagent invocation for every feature attempt.
 - Do not resume implementation, review, or verification after `Pass`/`Complete` without a code change, an observed failure, a concrete material risk, or an explicit user request.
 
 ## Mandatory independent review loop
 
-Implementation reviewers are separate from the discovery team. Use pi user-level subagents, never project-local agents by default. Both dedicated roles are required and read-only: reviewers must not modify files, Git state, dependencies, external services, or perform the implementation.
+Implementation reviewers are separate from the discovery team. Use the shared-scope reviewer definitions supplied with this workflow through the current agent host's native delegation mechanism, never project-local overrides by default. Both dedicated roles are required and read-only: reviewers must not modify files, Git state, dependencies, external services, or perform the implementation.
 
 1. Ask `implementation-reviewer` to judge approved-specification compliance, implementation completeness, diff safety, brownfield compatibility, maintainability, and concrete code-level risks.
 2. Ask `behavior-reviewer` to judge approved acceptance criteria, agreed test results, material runtime behavior, regressions, failure states, and data preservation.

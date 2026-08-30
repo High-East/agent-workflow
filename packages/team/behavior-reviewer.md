@@ -1,7 +1,6 @@
 ---
 name: behavior-reviewer
 description: Independently verifies that the implemented result passes the agreed tests and exhibits the approved user-visible and runtime behavior.
-tools: read, grep, find, ls, bash
 ---
 
 # Behavior Reviewer

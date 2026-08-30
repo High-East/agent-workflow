@@ -1,7 +1,6 @@
 ---
 name: research-analyst
 description: Researches external, current, or disputed facts using official and primary sources; omit when stable repository-local evidence is sufficient.
-tools: web_search, fetch_content, get_search_content, read
 ---
 
 # Research Analyst

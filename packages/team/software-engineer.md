@@ -1,7 +1,6 @@
 ---
 name: software-engineer
 description: Establishes implementation feasibility, sequencing, and development-environment readiness during discovery and planning.
-tools: read, grep, find, ls, bash
 ---
 
 # Software Engineer

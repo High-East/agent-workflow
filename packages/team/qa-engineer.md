@@ -1,7 +1,6 @@
 ---
 name: qa-engineer
 description: Defines the proportional test strategy, E2E environment, acceptance evidence, and completion criteria during discovery and planning.
-tools: read, grep, find, ls, bash
 ---
 
 # QA Engineer

@@ -4,10 +4,10 @@ This document is the canonical detailed operating contract loaded only by the ex
 
 ## 1. Activate the cwd-first target, then classify and route
 
-Treat Pi's current directory as the default target cwd. Before repository-specific planning, specialist delegation, implementation handoff, review, or Git mutation, activate target context:
+Treat the current agent session's working directory as the default target cwd. Before repository-specific planning, specialist delegation, implementation handoff, review, or Git mutation, activate target context:
 
 1. Canonicalize the current directory and resolve its containing Git worktree or project boundary as the **target root**. Record branch/worktree identity when Git applies; non-Git targets record those fields as not applicable.
-2. Read applicable target `AGENTS.md` or `CLAUDE.md` files on the ancestry from target root through target cwd. Apply compatible instructions from broad to specific; do not recursively load unrelated subtree context.
+2. Read applicable project instruction files, such as `AGENTS.md` or `CLAUDE.md`, on the ancestry from target root through target cwd. Apply compatible instructions from broad to specific; do not recursively load unrelated subtree context.
 3. Record target root, target cwd, scope, selected context paths and precedence, and a **context generation** that identifies the target, worktree/branch, scope, and context snapshot.
 4. Investigate another directory only when the customer names it or inspected request/project evidence indicates that it may be in scope. Do not broadly search for alternative targets on every invocation.
 
@@ -15,7 +15,7 @@ If multiple material targets remain ambiguous, safe read-only discovery may cont
 
 For an explicitly greenfield request, agree on the absolute future project directory during discovery. The orchestration cwd is not the future project unless the customer explicitly chooses it.
 
-This protocol is instruction-level enforcement. It does not claim that Pi automatically injects unrelated project context, changes process cwd, reloads context on every turn, or prevents every third-party tool from using an incorrect path.
+This protocol is instruction-level enforcement. It does not claim that the current agent host automatically injects unrelated project context, changes process cwd, reloads context on every turn, or prevents every external tool from using an incorrect path.
 
 After activation, the main agent acts as the lead of a forward-deployed engineering team operating in the customer's environment. Privately assess ambiguity, downstream decision cost, reversibility, failure cost, and required expertise. Task size does not reduce discovery obligations.
 
@@ -71,7 +71,7 @@ Treat customer infrastructure as part of requirements. Inspect the tools, SDKs, 
 
 Use proportional smoke tests rather than exhaustive preflight: when practical, run a representative build, simulator/emulator or browser launch, service startup, or deployment probe that demonstrates the intended development path. For greenfield work, a disposable minimal probe is allowed. The lead controls depth so preflight does not consume disproportionate time.
 
-Run independent work concurrently when useful: parallel specialist passes, UI preparation, repository research, and environment checks. Long-running safe shell work may run in a background `tmux` session while the interview continues. Do not parallelize work whose premise depends on an unresolved upstream decision.
+Run independent work concurrently when useful: parallel specialist passes, UI preparation, repository research, and environment checks. Long-running safe shell work may use the agent host's background execution facility or a terminal multiplexer while the interview continues. Do not parallelize work whose premise depends on an unresolved upstream decision.
 
 After discovery, handle newly found issues as follows:
 
@@ -123,7 +123,7 @@ Expected structured output:
 Allowed tools and prohibited actions:
 ```
 
-Every specialist, feature implementer, or reviewer runs with `cwd` set to the validated target root. Use `parallel` for independent blind-spot, preparation, or review work and `chain` only when a later read-only pass depends on an earlier output. Never use a chain for implementation attempts: each feature attempt and retry must be a separate invocation that receives durable repository evidence rather than a prior agent response. Delegated agents do not communicate directly. The lead integrates outputs, resolves conflicts, and owns canonical documents. Customer decisions marked `agreed` with valid provenance win; downstream agents must not promote recommendations or unproven labels to agreement. Otherwise escalate only conflicts that materially change the result.
+Every specialist, feature implementer, or reviewer runs with `cwd` set to the validated target root through the current agent host's native delegation mechanism. Run independent blind-spot, preparation, or review work concurrently, and run a later read-only pass sequentially only when it depends on an earlier output. Never resume or context-chain implementation attempts: each feature attempt and retry must be a fresh invocation that receives durable repository evidence rather than prior conversational output. Delegated agents do not communicate directly. The lead integrates outputs, resolves conflicts, and owns canonical documents. Customer decisions marked `agreed` with valid provenance win; downstream agents must not promote recommendations or unproven labels to agreement. Otherwise escalate only conflicts that materially change the result.
 
 ## 5. Implementation autonomy and customer re-contact
 
@@ -157,34 +157,11 @@ Do not retain role outputs by default. `spec.md` must stand alone for a fresh se
 
 For an existing project, write `<absolute-project-dir>/docs/plans/<feature-slug>/spec.md`. For greenfield work, safely create the agreed absolute project directory first, then create the same layout inside it. Never overwrite or repurpose a conflicting existing directory; stop and resolve the conflict.
 
-Always show the specification's copyable absolute path. Validate the target directory, specification, and the `pi` and `tmux` executables, then launch implementation as a fresh interactive Pi session inside a detached tmux session. The tmux session provides the live attach boundary; the Pi session remains the saved conversation and post-exit resume boundary.
+Always show the specification's copyable absolute path. Validate the target directory, specification, and the current agent host's ability to start a fresh top-level session. Launch implementation from the approved project directory and explicitly invoke the `implement` skill with the specification's absolute path. The new session must begin without the interview conversation as hidden context; `spec.md` and its indexed artifacts are the handoff boundary.
 
-Derive the tmux session name as `impl-<work-directory-name>--<feature-slug>`. Normalize the work-directory component to lowercase ASCII letters, digits, and hyphens, and use the approved specification directory name as the feature slug. Derive the Pi session name as `Implement: <feature-slug>`. If the tmux name already exists, append a fresh six-character lowercase UUID prefix; never attach the new implementation to, replace, or kill an existing tmux session.
+Use the host's native session naming, observation, resume, and termination controls. When naming is supported, use `Implement: <feature-slug>`. Never reuse, replace, or terminate an unrelated existing session to satisfy the handoff. Keep the interview session available for the user to continue or close, and never implement there or offer a same-session fallback.
 
-Use shell-safe argument construction for every concrete value and launch with this shape:
-
-```bash
-tmux_name="impl-<normalized-work-directory-name>--<feature-slug>"
-tmux has-session -t "$tmux_name" 2>/dev/null && \
-  tmux_name="${tmux_name}-$(uuidgen | tr '[:upper:]' '[:lower:]' | cut -c1-6)"
-pi_session_name="Implement: <feature-slug>"
-implementation_prompt="/skill:implement <absolute-spec-path>"
-printf -v launch_command \
-  'tmux set-option -w -t %q remain-on-exit on; exec pi --name %q %q' \
-  "$tmux_name" "$pi_session_name" "$implementation_prompt"
-tmux new-session -d -s "$tmux_name" -c <absolute-project-dir> "$launch_command"
-```
-
-`remain-on-exit` must preserve the pane after Pi exits so its final output and exit status remain inspectable. Check only for an immediate tmux or pane launch failure; do not wait for implementation to finish. Treat a dead pane with exit status zero as a fast successful completion, and a nonzero status as launch or implementation failure.
-
-On successful launch, provide the specification path, Pi session name, tmux session name, and these copyable commands without prescribing when to run them:
-
-```bash
-tmux attach -t <tmux-session-name>
-tmux kill-session -t <tmux-session-name>
-```
-
-The attach command is the only supported way to observe or interact with the running implementation. Do not open the same Pi session concurrently with `pi --session` or `pi -r`; both start another Pi process and are only suitable for resuming the saved Pi session after the tmux-hosted Pi process has ended. Never implement in the interview session or offer a same-session fallback. Keep the interview session available for the user to continue or close. Do not automatically delete the tmux session; leave it available for inspection until the customer uses the cleanup command. If launch fails, preserve `spec.md` and the dead pane when available, report the tmux session and pane exit status, and provide one copyable detached retry command using a fresh collision-free tmux name.
+On successful launch, provide the specification path, implementation session identity, and any copyable observation, resume, or cleanup commands without prescribing when to run them. Check only for an immediate launch failure; do not wait for implementation to finish. If the host cannot launch a fresh top-level session programmatically, preserve `spec.md` and return the exact working directory plus a copyable host-native launch command or prompt. If launch fails, preserve the failed session when inspectable, report its status, and provide one safe retry instruction that creates a fresh session rather than reusing the failed one.
 
 ## 7. Verification and independent review contract
 
