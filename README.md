@@ -21,15 +21,14 @@ The workflow contains six discovery roles, one feature implementer, and two inde
 ## Repository layout
 
 ```text
-contexts/                       Agent-neutral global context
+rules/                          Agent-neutral instructions and global context
 skills/                         Reusable workflow skills
 subagents/                      Discovery, implementation, and review roles
-.rulesync/                      Rulesync adapter links to the three directories
 rulesync.jsonc                  Claude Code and Codex generation config
 package.json                    Pinned Rulesync commands and version
 ```
 
-Edit only `contexts/`, `skills/`, and `subagents/`. The `.rulesync/` directory contains relative symbolic links so Rulesync can consume those root-level directories without maintaining duplicate source files.
+Edit `rules/`, `skills/`, and `subagents/` directly. `rulesync.jsonc` sets `inputRoots` to the repository root, so Rulesync consumes these directories without an adapter tree or duplicate source files.
 
 The `interview` skill is self-contained. Its detailed workflow is embedded directly in `skills/interview/SKILL.md`, so invoking the skill does not require another reference-file read.
 
@@ -52,7 +51,7 @@ npm run sync
 
 | Source | Claude Code | Codex |
 | --- | --- | --- |
-| `contexts/` | `~/.claude/CLAUDE.md` | `~/.codex/AGENTS.md` |
+| `rules/` | `~/.claude/CLAUDE.md` | `~/.codex/AGENTS.md` |
 | `skills/` | `~/.claude/skills/` | `~/.agents/skills/` |
 | `subagents/` | `~/.claude/agents/` | `~/.codex/agents/` |
 
