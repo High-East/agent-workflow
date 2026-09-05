@@ -2,8 +2,8 @@
   "$schema": "https://github.com/dyoshikawa/rulesync/releases/latest/download/config-schema.json",
   "inputRoots": ["."],
   "targets": {
-    "claudecode": ["rules", "skills", "subagents"],
-    "codexcli": ["rules", "skills", "subagents"]
+    "claudecode": ["rules", "skills"],
+    "codexcli": ["rules", "skills"]
   },
   "delete": false,
   "verbose": false
