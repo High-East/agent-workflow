@@ -1,5 +1,5 @@
 {
-  "name": "agent-workflow",
+  "name": "agents",
   "private": true,
   "engines": {
     "node": ">=22"
