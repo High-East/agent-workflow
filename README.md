@@ -31,7 +31,7 @@ package.json                    Pinned Rulesync commands and version
 
 Edit `rules/` and `skills/` directly. `rulesync.jsonc` sets `inputRoots` to the repository root, so Rulesync consumes these directories without an adapter tree or duplicate source files.
 
-The `interview` skill is self-contained. Its detailed workflow is embedded directly in `skills/interview/SKILL.md`, so invoking the skill does not require another reference-file read.
+Each `SKILL.md` carries its full workflow. Files under a skill's `references/` directory are role prompts that the skill hands to subagents when it delegates; they are not required reading for the skill itself.
 
 ## Install or update on a computer
 

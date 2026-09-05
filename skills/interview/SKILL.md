@@ -1,6 +1,6 @@
 ---
 name: interview
-description: Run the full Agent Team discovery workflow, obtain literal-keyword approval, write an approved spec.md, and hand implementation to a fresh agent session.
+description: Run a structured discovery interview, obtain literal-keyword approval, write an approved spec.md, and hand implementation to a fresh agent session.
 targets: ["claudecode", "codexcli"]
 claudecode:
   disable-model-invocation: true
@@ -9,212 +9,96 @@ codexcli:
     allow_implicit_invocation: false
 ---
 
-# Agent Team Workflow
+# Interview
 
-This document is the canonical detailed operating contract loaded only by the explicit `interview` skill. It governs discovery through approved specification handoff; global context does not route ordinary requests into this workflow.
+Run this skill only when the user explicitly invokes it. It covers discovery through an approved specification and a fresh-session handoff. It never implements.
 
-Run this skill only when the user explicitly invokes it through the current agent host's skill mechanism. Do not infer or automatically invoke it for ordinary requests.
+You act as the lead of a small engineering team working in the customer's environment. Specialists do not talk to the customer; you do.
 
-## 1. Activate the cwd-first target, then classify and route
+## 1. Establish the target and investigate first
 
-Treat the current agent session's working directory as the default target cwd. Before repository-specific planning, specialist delegation, implementation handoff, review, or Git mutation, activate target context:
+- Treat the current working directory as the target. Resolve its Git worktree or project root, current branch, and the applicable `CLAUDE.md` / `AGENTS.md` files. For a greenfield request, agree on the absolute future project directory during discovery; the current directory is not the project unless the customer says so.
+- Before asking anything, establish what can be established directly: project docs, code, current behavior, existing tests, delivery path, and the development and test environment. Do not ask the customer to repeat facts the repository already answers.
+- Scale discovery to the request. A small, reversible change may need one or two questions. A change that touches data, security, public surfaces, or protected behavior needs the full pass below.
 
-1. Canonicalize the current directory and resolve its containing Git worktree or project boundary as the **target root**. Record branch/worktree identity when Git applies; non-Git targets record those fields as not applicable.
-2. Read applicable project instruction files, such as `AGENTS.md` or `CLAUDE.md`, on the ancestry from target root through target cwd. Apply compatible instructions from broad to specific; do not recursively load unrelated subtree context.
-3. Record target root, target cwd, scope, selected context paths and precedence, and a **context generation** that identifies the target, worktree/branch, scope, and context snapshot.
-4. Investigate another directory only when the customer names it or inspected request/project evidence indicates that it may be in scope. Do not broadly search for alternative targets on every invocation.
+## 2. Perspectives and delegation
 
-If multiple material targets remain ambiguous, safe read-only discovery may continue, but formal planning and mutation are blocked until the main agent asks one deduplicated target question. A prior request's target must not be carried forward when current evidence identifies another target.
+Cover these perspectives yourself for every non-trivial request. The role prompts in `references/` describe each one in detail.
 
-For an explicitly greenfield request, agree on the absolute future project directory during discovery. The orchestration cwd is not the future project unless the customer explicitly chooses it.
+| Perspective | Owns | Role prompt |
+| --- | --- | --- |
+| Product Designer | outcome, scope, behavior, priority, product tradeoffs | `references/product-designer.md` |
+| UI Designer | interaction model, hierarchy, states, visual direction, prototypes | `references/ui-designer.md` |
+| Software Architect | boundaries, data flow, interfaces, migration, security, operability | `references/software-architect.md` |
+| Software Engineer | feasibility, sequencing, development-environment readiness | `references/software-engineer.md` |
+| QA Engineer | test strategy, E2E environment, acceptance evidence, agreed QA depth | `references/qa-engineer.md` |
+| Research Analyst | external, current, or disputed facts from primary sources | `references/research-analyst.md` |
 
-This protocol is instruction-level enforcement. It does not claim that the current agent host automatically injects unrelated project context, changes process cwd, reloads context on every turn, or prevents every external tool from using an incorrect path.
-
-After activation, the main agent acts as the lead of a forward-deployed engineering team operating in the customer's environment. Privately assess ambiguity, downstream decision cost, reversibility, failure cost, and required expertise. Task size does not reduce discovery obligations.
-
-## 2. Investigate, select the team, and brief the customer
-
-Before asking questions, inspect the selected memory, project documentation, codebase, current behavior, existing tests, delivery path, and relevant development/test environment. Establish facts directly when safe instead of asking the customer to repeat them. The main agent alone searches global memory and passes only relevant context to specialists.
-
-The team lead decides whether discovery is needed and which of the six interview-team roles participate:
-
-- Product Designer: intended outcome, scope, behavior, priority, product tradeoffs.
-- UI Designer: interaction, information hierarchy, visual direction, states, accessibility, and rapid prototypes.
-- Software Architect: existing and proposed boundaries, data flow, interfaces, migration, security, and operational tradeoffs.
-- Software Engineer: implementation feasibility, sequencing, and development-environment readiness.
-- QA Engineer: test strategy, E2E environment, acceptance criteria, failure tolerance, and agreed verification depth.
-- Research Analyst: external or time-sensitive evidence from official and primary sources.
-
-These roles serve discovery and planning only. Their participation ends when the implementation contract is ready. When the `implement` skill applies, a dedicated Feature Implementer performs each scoped implementation attempt in a fresh isolated context, while dedicated implementation reviewers independently evaluate the integrated result. An interview role may be omitted only when its concerns are already resolved or immaterial. Do not invent an interview-team role without user agreement. A required unavailable role is a blocker; the main agent must not imitate a missing specialist.
-
-When discovery is needed, start with a concise briefing before the first question:
-
-1. confirmed facts from memory, code, documentation, and environment inspection;
-2. inferences that the customer may need to correct;
-3. the current understanding of the requested outcome and protected areas;
-4. the unresolved decisions most likely to change downstream work;
-5. participating roles and why they are present.
+Delegate a perspective to a subagent only when its work is independent of unresolved decisions and benefits from running in parallel or in a separate context: web research, an isolated prototype, a long environment probe, or a broad brownfield survey. Use the host's native delegation mechanism, pass the role prompt as the subagent's instructions, and add a short packet: the request, target root and branch, confirmed decisions with their source, known facts and inferences, scoped paths, prohibited actions, and the expected output. Subagents never question the customer and never modify product code or planning documents. They return findings and ranked question candidates to you; you deduplicate, order by dependency, and ask.
 
 ## 3. Discovery interview
 
-The goal is shared understanding, including when the customer discovers what they want through the interview. Specialists never question the customer directly. They return findings and ranked question candidates to the lead, who removes duplication, orders dependencies, and asks exactly one decision at a time. Prefix the question with the responsible role, for example `Product Designer:` or `QA Engineer:`. Include a recommendation, brief rationale, and meaningful alternatives when useful.
+Open with a short briefing before the first question: confirmed facts, inferences the customer may need to correct, the current understanding of the outcome and protected areas, and the unresolved decisions most likely to change downstream work.
 
-Resolve upstream decisions before downstream commitments. Adapt the sequence to the request, normally moving through:
+Ask exactly one decision at a time, prefixed with the responsible perspective (`Product Designer:`, `QA Engineer:`), with a recommendation, a brief rationale, and meaningful alternatives when useful. Resolve upstream decisions before downstream ones. The usual order is outcome, scope and ambiguous concepts, product behavior, UX/UI direction, brownfield constraints and protected behavior, architecture and delivery, environment readiness, then QA depth and completion criteria. Ask only when preference or intent cannot be established reliably and the answer materially changes the work.
 
-1. customer problem and intended user-visible outcome;
-2. ambiguous request concepts and product scope;
-3. user experience and product behavior;
-4. UX/UI direction and rapid prototypes;
-5. greenfield or brownfield constraints and protected existing behavior;
-6. system architecture, integration, and delivery model;
-7. development and test environment readiness;
-8. agreed QA depth, evidence, and completion criteria.
+**Brownfield.** Inspect and protect current behavior, conventions, integrations, deployment paths, tests, and unrelated working-tree changes. Default to the smallest maintainable compatible change. If the existing structure materially harms the outcome, raise it in the interview instead of redesigning silently.
 
-Classify concerns as known knowns, known unknowns, unknown knowns, and unknown unknowns. Resolve them through memory or repository inspection, external research, environment probes, prototypes, customer questions, conservative defaults, or explicit team discretion. Ask the customer when preference or intent cannot be established reliably and the answer may materially change the outcome. Do not suppress a useful discovery question merely because later change appears technically reversible.
+**UX/UI.** Settle the interaction model, information hierarchy, important loading, empty, and error states, and the visual direction before implementation. Prototypes go only in an isolated directory: one option by default, at most three.
 
-Brownfield discovery must inspect and protect current behavior, conventions, architecture, integrations, deployment paths, tests, and unrelated working-tree changes. Default to the smallest maintainable compatible change. If the existing structure materially harms the requested outcome or handoff quality, explain the conflict and propose alternatives during the interview rather than silently redesigning it.
+**Environment.** Customer infrastructure is part of the requirements. Check the tools, SDKs, runtimes, services, accounts, devices, build and test commands, and delivery path the outcome needs. Prefer one representative smoke test (build, simulator or browser launch, service startup, deploy probe) over version checks alone. Resolve installs, authentication, and customer-only actions while the customer is present. Long-running safe work may use the host's background execution.
 
-### UX/UI during discovery
-
-The UI Designer may create isolated, low-cost prototypes during the interview. Default to one recommended option. Add alternatives only when comparison materially helps the decision, and produce no more than three unless the customer changes this preference. Favor fast, judgeable flows over polish. Establish the major interaction model, information hierarchy, important loading/empty/error states, and visual direction before product-code implementation. Record the chosen direction and only materially relevant rejected alternatives.
-
-### Environment readiness during discovery
-
-Treat customer infrastructure as part of requirements. Inspect the tools, SDKs, runtimes, services, accounts, permissions, devices, disk capacity, network access, build commands, test commands, and delivery path needed for the agreed outcome. Resolve foreseeable installations, upgrades, authentication, and customer-only actions while the customer has allocated interview time.
-
-Use proportional smoke tests rather than exhaustive preflight: when practical, run a representative build, simulator/emulator or browser launch, service startup, or deployment probe that demonstrates the intended development path. For greenfield work, a disposable minimal probe is allowed. The lead controls depth so preflight does not consume disproportionate time.
-
-Run independent work concurrently when useful: parallel specialist passes, UI preparation, repository research, and environment checks. Long-running safe shell work may use the agent host's background execution facility or a terminal multiplexer while the interview continues. Do not parallelize work whose premise depends on an unresolved upstream decision.
-
-After discovery, handle newly found issues as follows:
-
-- investigate read-only without asking;
-- perform safe, easily reversible remediation autonomously and report it;
-- otherwise stop as `Blocked` and ask only after presenting the finding, impact, recommendation, and alternatives.
+**Issues found on the way.** Investigate read-only without asking. Perform safe, easily reversible remediation and report it. Otherwise stop and present the finding, impact, recommendation, and alternatives before asking.
 
 ### Agreement provenance
 
-A decision is customer-agreed only when supported by one of these sources: a direct customer statement in the current conversation, a customer-approved artifact, or a standing instruction explicitly intended to govern future work. Record the supporting quote or artifact path. Agent or specialist recommendations, defaults, inferences, silence, and broad continuation language such as “proceed” or “continue” do not create new agreement or expand existing scope.
+A decision counts as agreed only when backed by a direct customer statement in this conversation, a customer-approved artifact, or a standing instruction meant to govern future work. Record the quote or path next to each agreed decision. Recommendations, defaults, inferences, silence, and broad continuation such as "proceed" or "continue" do not create agreement. Present as confirmed only what is agreed; label everything else as proposed or inferred.
 
-Track each material customer decision as `agreed`, `proposed`, `inferred`, or `unresolved`. Only `agreed` decisions may be presented downstream as confirmed, and every `agreed` entry must carry its provenance. Specialists may recommend decisions and identify likely inferences, but only the lead may classify them using customer evidence; missing provenance means the decision is not agreed.
+### Verification agreement
 
-### Interview completion and agreement validation
+Agree the QA depth during the interview. It is a ceiling as well as a floor, and complexity alone never raises it later. Defaults to propose:
 
-The lead may end discovery when:
+- E2E against the real runtime when it is not excessively complex: an isolated or fake database and Docker for servers, browser automation for web, simulators or emulators for apps.
+- Focused unit tests for core logic and materially risky behavior, with no arbitrary coverage targets.
+- No brittle tests that merely pin easily changed configuration values.
+- Rollback verification only when the customer selects a genuinely high-assurance level.
 
-- the actual desired outcome can be stated clearly;
-- material product and UX/UI choices are settled;
-- greenfield/brownfield constraints and protected areas are known;
-- the implementation and test environment is ready to the agreed proportional level;
-- the test strategy and completion criteria are agreed;
-- remaining decisions are safe implementation-team discretion.
+### Completion and approval gate
 
-When the importance or ambiguity warrants it, validate one to three core agreements with reverse, scenario, teach-back, or counterfactual questions. Compare the answers with the interview record. If they conflict, reopen only the affected decision and do not implement until it is reconciled.
+End discovery when the desired outcome is clear, material product and UX/UI choices are settled, constraints and protected areas are known, the environment is ready to the agreed level, QA depth and completion criteria are agreed, and what remains is safe team discretion. When importance or ambiguity warrants it, validate one to three core agreements with a reverse, scenario, or teach-back question and reopen only what conflicts.
 
-### Final summary and explicit approval gate
+Present a concise final summary: outcome, scope, material UX/UI, absolute target, constraints and protected areas, environment readiness, QA depth, and completion criteria. State that approval is recognized only when the reply contains the literal word `승인`, for example `이 내용으로 승인해.` Do not treat `좋아`, `진행해`, silence, or other continuation language as approval. On change requests, reopen only the affected decisions and present the summary again. Do not write the final `spec.md` before valid approval.
 
-When all material decisions are resolved, present a concise final summary covering outcome, scope, material UX/UI, absolute target, constraints, protected areas, environment readiness, agreed QA depth, and completion criteria. State that approval is recognized only when the customer's reply includes the literal word `승인`, and give an example such as `이 내용으로 승인해.`
+## 4. Approved specification
 
-Do not treat `좋아`, `진행해`, silence, or other broad continuation language as approval. If the customer requests changes, reopen only affected decisions and present the updated summary again. Do not write the final `spec.md` or launch implementation before valid approval.
+Before handoff, discovery must resolve any credible data-loss risk; any material security, privacy, credential, permission, or public-exposure impact; migration, rollout, rollback, and recovery; disruption to live or critical services; and expensive-to-reverse decisions that depend on customer preference.
 
-## 4. Context packets and orchestration
-
-Every delegation includes only relevant material:
-
-```text
-Request and phase: discovery | planning | feature-implementation | implementation-review | behavior-review
-Target root/cwd, repository, worktree, and branch:
-Scoped working paths:
-Selected context paths and context generation:
-Customer decisions (`decision | status | customer quote or approved artifact path`), and protected areas:
-Known facts and explicit inferences:
-Known unknowns, unknown-known criteria, and unknown-unknown blind spots:
-Environment and test readiness:
-QA depth and completion criteria (`status | customer quote or approved artifact path`):
-Role-specific feature, investigation, or review criteria:
-Expected structured output:
-Allowed tools and prohibited actions:
-```
-
-Every specialist, feature implementer, or reviewer runs with `cwd` set to the validated target root through the current agent host's native delegation mechanism. Run independent blind-spot, preparation, or review work concurrently, and run a later read-only pass sequentially only when it depends on an earlier output. Never resume or context-chain implementation attempts: each feature attempt and retry must be a fresh invocation that receives durable repository evidence rather than prior conversational output. Delegated agents do not communicate directly. The lead integrates outputs, resolves conflicts, and owns canonical documents. Customer decisions marked `agreed` with valid provenance win; downstream agents must not promote recommendations or unproven labels to agreement. Otherwise escalate only conflicts that materially change the result.
-
-## 5. Implementation autonomy and customer re-contact
-
-After discovery and planning, the interview team is no longer active. The lead owns feature decomposition, durable implementation notes, context packets, attempt sequencing, diff/evidence integration, full verification, scoped Git operations, and maintainable handoff quality. Under the `implement` skill, the lead does not make product or test edits: a dedicated Feature Implementer performs one scoped feature attempt and its focused tests per fresh isolated invocation. Internal implementation details remain team discretion; do not ask the customer to choose class structure, file layout, routine refactoring, internal test mechanics, or equivalent implementation techniques.
-
-After discovery, re-contact the customer only when:
-
-- the agreed user-visible outcome or scope must change;
-- a new material data, security, privacy, permission, public-exposure, or cost impact appears;
-- a protected existing-system boundary must move;
-- an expensive-to-reverse choice depends on customer preference;
-- customer-only action or authorization is unavoidable.
-
-Investigate first. Never return a bare implementation-time question that the interview could have prevented.
-
-## 6. Approved specification and fresh-session handoff
-
-After valid approval, create the sole implementation entry document under the absolute target project:
-
-Discovery and the specification must explicitly address any credible costly or irreversible data loss; material security, privacy, credential, permission, or public-exposure impact; migration or rollout compatibility, rollback, and recovery; material disruption to live or critical services; and unresolved high-impact decisions expensive to reverse. Do not hand off while any such material issue remains unresolved.
+After approval, write under the absolute target project:
 
 ```text
 docs/plans/<feature-slug>/
   spec.md
   interview/    # retained role outputs only when useful
   artifacts/    # canonical supporting material only when useful
-  prototypes/   # selected useful prototypes only when useful
+  prototypes/   # selected prototypes only when useful
 ```
 
-Do not retain role outputs by default. `spec.md` must stand alone for a fresh session and contain the customer outcome, requirements and rationale, selected UX/UI and states, relevant rejected alternatives, absolute target repository/cwd/branch/scope, existing-system constraints and protected areas, environment readiness, implementation sequence, team discretion, QA depth, completion criteria, unresolved-item handling, and approval provenance. It is the highest-priority and sole `implement` entry contract. If supporting files are useful, index their explicit reading order from `spec.md`; no supporting artifact may override it.
+`spec.md` is the sole `implement` entry contract and must stand alone for a fresh session. It contains the customer outcome; requirements and rationale; selected UX/UI and states; relevant rejected alternatives; absolute target root, cwd, branch, and scope; existing-system constraints and protected areas; environment readiness; implementation sequence; team discretion; QA depth; completion criteria; unresolved-item handling; approval provenance; and, when supporting files exist, their reading order. Mark it `State: ready` and `Approval: yes` with the approving quote. Never overwrite or repurpose a conflicting existing directory; stop and resolve the conflict.
 
-For an existing project, write `<absolute-project-dir>/docs/plans/<feature-slug>/spec.md`. For greenfield work, safely create the agreed absolute project directory first, then create the same layout inside it. Never overwrite or repurpose a conflicting existing directory; stop and resolve the conflict.
+## 5. Fresh-session handoff
 
-Always show the specification's copyable absolute path. Validate the target directory, specification, and the current agent host's ability to start a fresh top-level session. Launch implementation from the approved project directory and explicitly invoke the `implement` skill with the specification's absolute path. The new session must begin without the interview conversation as hidden context; `spec.md` and its indexed artifacts are the handoff boundary.
+Implementation runs in a new top-level session so the interview conversation is not hidden context. `spec.md` and its indexed files are the handoff boundary. Do not implement in this session and do not offer a same-session fallback.
 
-Use the host's native session naming, observation, resume, and termination controls. When naming is supported, use `Implement: <feature-slug>`. Never reuse, replace, or terminate an unrelated existing session to satisfy the handoff. Keep the interview session available for the user to continue or close, and never implement there or offer a same-session fallback.
+Print the absolute spec path and the launch steps for both hosts:
 
-On successful launch, provide the specification path, implementation session identity, and any copyable observation, resume, or cleanup commands without prescribing when to run them. Check only for an immediate launch failure; do not wait for implementation to finish. If the host cannot launch a fresh top-level session programmatically, preserve `spec.md` and return the exact working directory plus a copyable host-native launch command or prompt. If launch fails, preserve the failed session when inspectable, report its status, and provide one safe retry instruction that creates a fresh session rather than reusing the failed one.
+```text
+cd <absolute-target-root>
+claude   →  /implement <absolute-spec-path>
+codex    →  $implement <absolute-spec-path>
+```
 
-## 7. Verification and independent review contract
+If the host can start a fresh session itself, use it, name it `Implement: <feature-slug>`, check only for immediate launch failure, and never reuse or terminate an unrelated session. Otherwise the copyable steps above are the handoff.
 
-Agree on verification depth during discovery. Complexity alone never authorizes verification beyond the agreement.
+## 6. Git safety
 
-Defaults:
-
-- Prefer E2E tests that exercise the real runtime when they are not excessively complex.
-- For servers, consider a fake or isolated database and Docker or an equivalently simple reproducible environment.
-- For web frontends, prefer browser automation; for apps, prefer simulators/emulators and physical-device checks only when agreed.
-- Add focused unit tests for core logic and materially risky behavior; do not pursue arbitrary coverage targets.
-- Avoid brittle tests that merely pin easily changed configuration values.
-- Rollback verification is outside the default bar and is included only when the customer selects a genuinely high-assurance level.
-
-When the `implement` skill applies, a dedicated execution role also operates outside the interview team:
-
-- Feature Implementer: implements and focused-tests exactly one approved feature attempt. Every initial attempt, retry, and integrated corrective attempt uses a new isolated invocation with no prior conversational output.
-
-The lead records the result in durable notes after every attempt. Retries receive only the approved specification and linked documents, current repository state and scoped diff, notes, focused failure evidence, and recorded root-cause analysis. Initial and retry attempts for the same feature never run concurrently in one worktree. A feature has one initial attempt and at most two retries; repeated material failure requires root-cause analysis before the final attempt.
-
-When the `implement` skill applies, two dedicated reviewers operate outside the interview team:
-
-- Implementation Reviewer: approved-specification compliance, implementation completeness, diff safety, brownfield compatibility, maintainability, and concrete code-level risk.
-- Behavior Reviewer: acceptance criteria, agreed tests, E2E/runtime behavior, regressions, failure states, and data preservation.
-
-Both reviewers are read-only, may not implement fixes or introduce requirements, and judge only the approved contract and agreed QA depth. After a corrective pass, rerun only a reviewer whose finding caused a change or whose evidence was invalidated. Any product-code change is presumed to affect behavior review unless the lead records why the existing evidence remains valid.
-
-Only an observed failure or concrete credible mechanism that undermines the agreed outcome, implementation completeness, runtime health, security, data preservation, or explicit acceptance criterion requires another implementation pass. Additional edge cases, hardening, failure injection, evidence formatting, or rollback variants beyond the agreed bar are follow-up work. “Not exhaustively reviewed or tested” is insufficient to block completion.
-
-## 8. Retry, status, and reporting
-
-A failed operation, feature, or corrective approach has a default maximum of three attempts. Every feature retry is a new isolated Feature Implementer invocation; direct prior-agent output is not retry context. Stop earlier when retries repeat the same ineffective strategy, increase risk or cost disproportionately, or have little chance of success. A role or tool failure follows the same ceiling unless safety requires immediate stopping.
-
-Use two customer-facing terminal statuses:
-
-- `Complete`: the agreed result passed the agreed QA bar. Report success briefly and explain how the customer can try it.
-- `Blocked`: implementation could not proceed or the implemented result failed agreed QA. Lead with the blocker and the one required next action. Include details only when needed to unblock.
-
-Do not label unverified agreed core behavior complete. Do not burden routine completion reports with file inventories, command transcripts, or extensive evidence unless the customer asks.
-
-## 9. Target drift and Git safety
-
-Revalidate target root, target cwd, worktree/branch, scope, and applicable context before implementing and whenever they change. If drift materially changes requirements, architecture, protected areas, safety, or acceptance criteria, stop for reconciliation. Run Git and verification operations against the validated target repository. Never reset, stash, clean, overwrite, stage, or commit unrelated customer changes. Stage only intentional scoped files and preserve dirty generated or memory-managed context outside the task.
+Never reset, stash, clean, overwrite, stage, or commit unrelated customer changes. This skill commits nothing; the implementation session owns Git operations.
