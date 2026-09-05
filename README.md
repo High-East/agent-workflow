@@ -2,7 +2,7 @@
 
 A reusable, agent-independent workflow for structured discovery, isolated implementation, independent review, and post-implementation debriefing.
 
-The repository is the source of truth for global context, skills, and subagents. [Rulesync](https://github.com/dyoshikawa/rulesync) generates the host-specific files consumed by Claude Code and Codex.
+The repository is the source of truth for global context and skills. [Rulesync](https://github.com/dyoshikawa/rulesync) generates the host-specific files consumed by Claude Code and Codex.
 
 ## Workflow
 
@@ -16,19 +16,20 @@ explicitly invoke `interview`
   → optionally invoke `debrief`
 ```
 
-The workflow contains six discovery roles, one feature implementer, and two independent reviewers.
+The workflow contains six discovery roles, one feature implementer, and two independent reviewers. Role prompts live under each skill's `references/` directory; skills spawn them through the host's native delegation mechanism, so no host-level subagent files are installed.
 
 ## Repository layout
 
 ```text
 rules/                          Agent-neutral instructions and global context
 skills/                         Reusable workflow skills
-subagents/                      Discovery, implementation, and review roles
+skills/interview/references/    Discovery role prompts
+skills/implement/references/    Feature implementer and reviewer role prompts
 rulesync.jsonc                  Claude Code and Codex generation config
 package.json                    Pinned Rulesync commands and version
 ```
 
-Edit `rules/`, `skills/`, and `subagents/` directly. `rulesync.jsonc` sets `inputRoots` to the repository root, so Rulesync consumes these directories without an adapter tree or duplicate source files.
+Edit `rules/` and `skills/` directly. `rulesync.jsonc` sets `inputRoots` to the repository root, so Rulesync consumes these directories without an adapter tree or duplicate source files.
 
 The `interview` skill is self-contained. Its detailed workflow is embedded directly in `skills/interview/SKILL.md`, so invoking the skill does not require another reference-file read.
 
@@ -47,13 +48,12 @@ npm run sync:dry-run
 npm run sync
 ```
 
-`sync:dry-run` shows the user-level files that would change. `sync` generates all three feature groups for both hosts:
+`sync:dry-run` shows the user-level files that would change. `sync` generates both feature groups for both hosts:
 
 | Source | Claude Code | Codex |
 | --- | --- | --- |
 | `rules/` | `~/.claude/CLAUDE.md` | `~/.codex/AGENTS.md` |
 | `skills/` | `~/.claude/skills/` | `~/.agents/skills/` |
-| `subagents/` | `~/.claude/agents/` | `~/.codex/agents/` |
 
 Run the same commands after pulling repository updates. `npm run sync:check` exits unsuccessfully when the installed files differ from the repository sources.
 
