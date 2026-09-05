@@ -1,6 +1,6 @@
-# agent-workflow
+# agents
 
-A reusable, agent-independent workflow for structured discovery, isolated implementation, independent review, and post-implementation debriefing.
+My agent setup: an agent-independent workflow for structured discovery, implementation, independent review, and post-implementation debriefing, synced to Claude Code and Codex. Other agent-related configuration (status line, memory tooling) will live here too.
 
 The repository is the source of truth for global context and skills. [Rulesync](https://github.com/dyoshikawa/rulesync) generates the host-specific files consumed by Claude Code and Codex.
 
